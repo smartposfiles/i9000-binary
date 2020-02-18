@@ -19,12 +19,16 @@ public class FiscalReport extends Document {
 		super.writeToParcel(p, flags);
 		_ofdStatistic.writeToParcel(p, flags);
 		_shift.writeToParcel(p, flags);
+		_signature.operator().writeToParcel(p, flags);
 	}
 	@Override
 	public void readFromParcel(Parcel p) {
 		super.readFromParcel(p);
 		_ofdStatistic.readFromParcel(p);
 		_shift.readFromParcel(p);
+		if(p.dataAvail() > 0)
+			_signature.operator().readFromParcel(p);
+		
 	}
 	/**
 	 * Информация по документам для отправки в ОФД
