@@ -474,7 +474,8 @@ public class KKMInfo extends Document {
 		p.writeInt(_registrationReason);
 		_owner.writeToParcel(p, flags);
 		_ofd.writeToParcel(p, flags);
-		_shift.writeToParcel(p, flags);
+		_shift.writeToParcel(p, 0);
+		_signature.operator().writeToParcel(p, flags);
 	}
 	
 	@Override
@@ -502,6 +503,8 @@ public class KKMInfo extends Document {
 		_owner.readFromParcel(p);
 		_ofd.readFromParcel(p);
 		_shift.readFromParcel(p);
+		if(p.dataAvail() > 0)
+			_signature.operator().readFromParcel(p);
 	}
 
 	@Override

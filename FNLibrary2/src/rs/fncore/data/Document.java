@@ -9,7 +9,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.os.Parcel;
-import android.util.Log;
 import rs.fncore.Const;
 /**
  * Фискальный документ
@@ -20,7 +19,7 @@ public abstract class Document extends TLV implements IReableFromParcel {
 
 	private static final String CLASS_NAME_TAG = "Class";
 	private static final String LOCATION_TAG = "Location";
-	protected static final int DDL_VERSION = 101; 
+	protected static final int DDL_VERSION = 100; 
 
 	/**
 	 * Несовпадение версий документа
@@ -35,8 +34,8 @@ public abstract class Document extends TLV implements IReableFromParcel {
 		}
 	}
 	
-	int _DDL;
-	protected Signature _signature;
+	protected int _DDL = DDL_VERSION;
+	protected Signature _signature = new Signature(this);
 	protected Location _location = new Location();
 	 
 	public Document(JSONObject json) {
@@ -72,7 +71,6 @@ public abstract class Document extends TLV implements IReableFromParcel {
 				buffer.clear();
 			}
 			buffer.putShort((short)(keyAt(i) & 0xFFFF));
-			Log.d("FNCORE2", String.format("  Pack %d, %04X",keyAt(i),keyAt(i)));
 			buffer.put(tag.pack());
 		}
 		if(buffer.position() > 0) {
@@ -91,8 +89,7 @@ public abstract class Document extends TLV implements IReableFromParcel {
 	}
 	@Override
 	public void writeToParcel(Parcel p, int flags) {
-		p.writeInt(DDL_VERSION);
-		
+		p.writeInt(_DDL);
 		p.writeInt(size());
 		for(int i=0;i<size();i++) {
 			p.writeInt(keyAt(i));
@@ -104,6 +101,7 @@ public abstract class Document extends TLV implements IReableFromParcel {
 			_signature.writeToParcel(p, flags);
 		} else
 			p.writeInt(0);
+		
 	}
 	public void readFromParcel(Parcel p) {
 		_DDL = p.readInt(); 
@@ -127,7 +125,7 @@ public abstract class Document extends TLV implements IReableFromParcel {
 	 * Документ сохранен в ФН?
 	 * @return
 	 */
-	public boolean isSigned() { return _signature != null; }
+	public boolean isSigned() { return _signature._fpd != 0; }
 	/**
 	 * Получить фискальную подпись документа
 	 * @return

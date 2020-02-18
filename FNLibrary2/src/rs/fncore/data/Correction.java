@@ -30,13 +30,17 @@ public class Correction extends Document {
 		/**
 		 * По предписанию
 		 */
-		byArbitarity,
+		byArbitarity((byte)1),
 		/**
 		 * Произвольная
 		 */
-		byPercept;
+		byPercept((byte)0);
+		private final byte bVal;
+		CorrectionType(byte bval) {
+			bVal = bval;
+		}
 		public byte bValue() {
-			return (byte)(ordinal());
+			return bVal;
 		}
 	}
 	protected CorrectionType _type = CorrectionType.byPercept;
@@ -82,7 +86,7 @@ public class Correction extends Document {
 		p.writeInt(_payments.size()); 
 		for(Payment payment : _payments.values())
 			payment.writeToParcel(p,flags);
-		
+		_signature.operator().writeToParcel(p, flags);
 	}
 	/**
 	 * Получить платеж по типу
@@ -124,6 +128,8 @@ public class Correction extends Document {
 			payment.readFromParcel(p);
 			_payments.put(payment.getType(), payment);
 		}
+		if(p.dataAvail() > 0)
+			_signature.operator().readFromParcel(p);
 		
 	}
 	/**

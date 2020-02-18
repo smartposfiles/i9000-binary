@@ -1,5 +1,6 @@
 package rs.fncore.data;
 
+import rs.fncore.Const;
 import android.os.Parcel;
 import android.os.Parcelable;
 /**
@@ -7,11 +8,16 @@ import android.os.Parcelable;
  * @author nick
  *
  */
-public class ParcelableStrings  extends SerializableList<String>{
+public class ParcelableStrings  extends SerializableList<String> {
 
 	private static final long serialVersionUID = -8330054965761393712L;
 	public ParcelableStrings() {
-		// TODO Auto-generated constructor stub
+	}
+	@Override
+	public String get(int index) {
+		if(index >= size())
+			return Const.EMPTY_STRING;
+		return super.get(index);
 	}
 
 	public static final Parcelable.Creator<ParcelableStrings> CREATOR = new Parcelable.Creator<ParcelableStrings>() {

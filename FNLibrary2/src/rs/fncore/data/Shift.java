@@ -30,6 +30,8 @@ public class Shift extends Document {
 		p.writeInt(_is_open ? 1:0);
 		p.writeInt(_warnings);
 		_ofdState.writeToParcel(p,flags);
+		if(flags == 1)
+			_signature._operator.writeToParcel(p,flags);
 	}
 	@Override
 	public void readFromParcel(Parcel p) {
@@ -77,6 +79,8 @@ public class Shift extends Document {
 		public Shift createFromParcel(Parcel p) {
 			Shift result = new Shift();
 			result.readFromParcel(p);
+			if(p.dataAvail() > 0)
+				result._signature._operator.readFromParcel(p);
 			return result;
 		}
 

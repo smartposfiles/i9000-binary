@@ -91,6 +91,7 @@ public class SellOrder extends Document {
 		for(Payment payment: _payments.values())
 			payment.writeToParcel(p, flags);
 		_agentData.writeToParcel(p, flags);
+		_signature.operator().writeToParcel(p, flags);
 	}
 
 	@Override
@@ -112,6 +113,8 @@ public class SellOrder extends Document {
 			_payments.put(payment.getType(), payment);
 		}
 		_agentData.readFromParcel(p);
+		if(p.dataAvail() > 0)
+			_signature.operator().readFromParcel(p);
 	}
 
 	@Override

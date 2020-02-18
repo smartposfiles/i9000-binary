@@ -22,12 +22,15 @@ public class ArchiveReport extends Document {
 		super.writeToParcel(p, flags);
 		p.writeInt(_isAutomateMode ? 1 : 0);
 		p.writeString(_automateNumber);
+		_signature.operator().writeToParcel(p, flags);
 	}
 	@Override
 	public void readFromParcel(Parcel p) {
 		super.readFromParcel(p);
 		_isAutomateMode = p.readInt() != 0;
 		_automateNumber = p.readString();
+		if(p.dataAvail() > 0)
+			_signature.operator().readFromParcel(p);
 	}
 	/**
 	 * Признак "установлен в автомате"

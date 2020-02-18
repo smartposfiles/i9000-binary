@@ -33,6 +33,7 @@ public class Const {
 		public static final int OLD_FN_HAS_DATA = 0xCB;
 		public static final int FN_REPLACEMENT = 0xCD;
 		public static final int NO_CASH = 0xCE;
+		public static final int NOT_IMPLEMENTED  = 0xCF;
 	}
 	
 	private Const() { }

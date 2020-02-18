@@ -65,7 +65,6 @@ public class Signature implements Parcelable {
 			_signer.writeToParcel(p,flags); 
 		} else
 			p.writeInt(0);
-		_operator.writeToParcel(p, flags);
 	}
 	public void readFromParcel(Parcel p) {
 		_number = p.readInt();
@@ -75,7 +74,5 @@ public class Signature implements Parcelable {
 			_signer = new Signer();
 			_signer.readFromParcel(p);
 		}
-		if(_owner._DDL > 100)
-			_operator.readFromParcel(p);
 	}
 }

@@ -132,6 +132,8 @@ public class Tag {
 		this();
 		_type = DataType.tlv;
 		for (int i = 0; i < tags.size(); i++) {
+			if(tags.keyAt(i) > Short.MAX_VALUE) 
+				continue;
 			_data.putShort((short) (tags.keyAt(i) & 0xFFFF));
 			_data.put(tags.valueAt(i).pack());
 		}

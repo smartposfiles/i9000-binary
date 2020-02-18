@@ -5,6 +5,7 @@ import android.app.Application;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -12,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Log;
 import rs.fncore.Const;
 import rs.fncore.Const.Errors;
 import rs.fncore.FiscalStorage;
@@ -26,6 +28,7 @@ import rs.utils.app.MessageQueue.MessageHandler;
 @SuppressWarnings("deprecation")
 public class AppCore extends Application implements ServiceConnection {
 
+	private Intent START_INTENT = Const.FISCAL_STORAGE;
 	public static final int NO_CONNECTION =  0;
 	public static final int CONNECTING = 1;
 	public static final int CONNECTED = 2;
@@ -135,20 +138,25 @@ public class AppCore extends Application implements ServiceConnection {
 	 */
 	public int initialize() {
 		if(_storage == null) {
-			ComponentName cn = null;
-			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-				cn = startForegroundService(Const.FISCAL_STORAGE);
-			else 
-				cn = startService(Const.FISCAL_STORAGE);
-			if(cn== null) return NO_CONNECTION;
-			return bindService(Const.FISCAL_STORAGE, this, BIND_AUTO_CREATE) == true ? CONNECTING: NO_CONNECTION;
+			if(START_INTENT == Const.FISCAL_STORAGE) {
+				ComponentName cn = null;
+				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+					cn = startForegroundService(Const.FISCAL_STORAGE);
+				else 
+					cn = startService(Const.FISCAL_STORAGE);
+				if(cn== null) return NO_CONNECTION;
+			}
+			return bindService(START_INTENT, this, BIND_AUTO_CREATE) == true ? CONNECTING: NO_CONNECTION;
 		}
 		return CONNECTED;
+	}
+	protected void setCoreIntent(Intent i) {
+		START_INTENT = i;
 	}
 	public void runOnUI(Runnable r) {
 		_queue.post(r);
 	}
-	/**
+	/** 
 	 * 
 	 * @param h
 	 */
@@ -165,6 +173,7 @@ public class AppCore extends Application implements ServiceConnection {
 	@Override
 	public void onServiceConnected(ComponentName arg0, IBinder binder) {
 		_storage = FiscalStorage.Stub.asInterface(binder);
+		_state = 1;
 		new FNOperaionTask(this,MSG_FISCAL_STORAGE_READY) {
 			private int R = Errors.SYSTEM_ERROR;
 			@Override
@@ -182,11 +191,16 @@ public class AppCore extends Application implements ServiceConnection {
 			}; 
 		}.execute(); 
 	}
+	private int _state  = 0;
 	@Override
 	public void onServiceDisconnected(ComponentName arg0) {
 		_storage = null;
 	}
-	protected FiscalStorage getStorage() { return _storage; }
+	protected FiscalStorage getStorage() {
+		if(_storage == null && _state != 0)
+			bindService(START_INTENT, this, BIND_AUTO_CREATE);
+		return _storage; 
+	}
 	
 	public void deinitialize() {
 		if(_storage != null) try {
@@ -194,10 +208,14 @@ public class AppCore extends Application implements ServiceConnection {
 		} catch(Exception e) { }
 	}
 	public FNOperaionTask newTask(Context context, final ProcessTask r, final ResultTask onResult ) {
-		if(_storage == null) return null;
 		return new FNOperaionTask(context,0) {
 			@Override
 			protected Integer doInBackground(Object... args) {
+				if(_storage == null) {
+					Log.d("FNCORE2", "Service lost?");
+					return Errors.SYSTEM_ERROR;
+					
+				}
 				return r.execute(_storage, this,args);
 			}
 			@Override
@@ -219,7 +237,7 @@ public class AppCore extends Application implements ServiceConnection {
 	}
 	@Override
 	public void onBindingDied(ComponentName name) {
-		// TODO Auto-generated method stub
+		Log.d("FNCORE2","Bind died");
 		
 	}
 	@Override
