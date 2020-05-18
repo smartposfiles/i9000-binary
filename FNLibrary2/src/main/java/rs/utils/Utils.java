@@ -6,6 +6,7 @@ import android.graphics.Bitmap.Config;
 import android.graphics.Color;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -34,21 +35,10 @@ import rs.fncore.data.IReableFromParcel;
  *
  */
 public class Utils {
+	private static final String TAG="rs.utils.Utils";
 	@SuppressLint("SimpleDateFormat")
 	public static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 	public static final DateFormat DATE_FORMAT_S = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-
-	/**
-	 *
-	 * @param e
-	 * @return exception stack
-	 */
-	public static String getExceptionStack(Exception e) {
-		StringWriter sw = new StringWriter();
-		e.printStackTrace(new PrintWriter(sw));
-		String exceptionAsString = sw.toString();
-		return exceptionAsString;
-	}
 
 	/**
 	 * Округление до указанного количества знаков после запятой
@@ -93,7 +83,7 @@ public class Utils {
 	/**
 	 * Прочитать экземпляр  IReableFromParcel из массива байт
 	 * @param data
-	 * @param doc
+	 * @param docjse
 	 */
 	public static void deserialize( byte [] data,IReableFromParcel doc) {
 		Parcel p = Parcel.obtain();
@@ -213,6 +203,7 @@ public class Utils {
 		for(int i=0;i<inn.length();i++) 
 			d[i] = Integer.parseInt(""+inn.charAt(i));
 		} catch(NumberFormatException nfe) {
+			Log.e(TAG,"exception",nfe);
 			return false;
 		}
 		
@@ -249,6 +240,7 @@ public class Utils {
 				return true;
 			return false;
 		} catch (NumberFormatException nfe) {
+			Log.e(TAG,"exception",nfe);
 			return false;
 		}
 	}
@@ -336,7 +328,9 @@ public class Utils {
 				Parcelable.Creator creator = (Parcelable.Creator)cField.get(null);
 				return (Document)creator.createFromParcel(p);
 			}
-		} catch(Exception e) { }
+		} catch(Exception e) {
+			Log.e(TAG,"exception",e);
+		}
 		return null;
 	}
 	public static byte[] hex2bytes(String hex) {

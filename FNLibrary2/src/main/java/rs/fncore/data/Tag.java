@@ -2,6 +2,7 @@ package rs.fncore.data;
 
 import android.annotation.SuppressLint;
 import android.os.Parcel;
+import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
 
@@ -26,6 +27,7 @@ import rs.utils.Utils;
  */
 public class Tag {
 
+	private final String TAG=this.getClass().getName();
 	private static final String TYPE_TAG = "t";
 	private static final String SIZE_TAG = "s";
 	private static final String DATA_TAG = "d";
@@ -280,7 +282,7 @@ public class Tag {
 			result.put(SIZE_TAG,_data.position());
 			result.put(DATA_TAG,Utils.dump(_data.array(), 0, _data.position()));
 		} catch (JSONException jse) {
-
+			Log.e(TAG,"exception",jse);
 		}
 		return result;
 	}

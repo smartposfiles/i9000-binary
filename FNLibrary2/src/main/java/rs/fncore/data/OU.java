@@ -2,6 +2,7 @@ package rs.fncore.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,6 +16,7 @@ import rs.fncore.Const;
  */
 public class OU implements IReableFromParcel {
 
+	private final String TAG=this.getClass().getName();
 	private static final String NAME_TAG = "Name";
 	private static final String INN_TAG = "INN";
 	public static final String EMPTY_INN = "0000000000";
@@ -128,7 +130,9 @@ public class OU implements IReableFromParcel {
 		try {
 			result.put(NAME_TAG, _name);
 			result.put(INN_TAG, _inn);
-		} catch(JSONException jse) { }
+		} catch(JSONException jse) {
+			Log.e(TAG,"exception",jse);
+		}
 		return result;
 	}
 	public static final Parcelable.Creator<OU> CREATOR = new Parcelable.Creator<OU>() {

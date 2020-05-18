@@ -1,6 +1,7 @@
 package rs.fncore.data;
 
 import android.os.Parcel;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -12,6 +13,7 @@ import java.util.ArrayList;
  */
 public class ParcelableList<T extends IReableFromParcel> extends ArrayList<T> implements IReableFromParcel {
 
+	private final String TAG=this.getClass().getName();
 	private static final long serialVersionUID = 4586905436984182905L;
 	private Class<T> _clazz;
 	public ParcelableList(Class<T> clazz) {
@@ -41,6 +43,7 @@ public class ParcelableList<T extends IReableFromParcel> extends ArrayList<T> im
 				elem.readFromParcel(p);
 				add(elem);
 			} catch(Exception e) {
+				Log.e(TAG,"exception",e);
 				return;
 			}
 		}

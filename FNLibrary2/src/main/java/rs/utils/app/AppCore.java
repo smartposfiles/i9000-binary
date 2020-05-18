@@ -29,6 +29,7 @@ import rs.utils.app.MessageQueue.MessageHandler;
 @SuppressWarnings("deprecation")
 public class AppCore extends Application implements ServiceConnection {
 
+	private final String TAG=this.getClass().getName();
 	private Intent START_INTENT = Const.FISCAL_STORAGE;
 	public static final int NO_CONNECTION =  0;
 	public static final int CONNECTING = 1;
@@ -183,6 +184,7 @@ public class AppCore extends Application implements ServiceConnection {
 					R = _storage.init();
 					onConnected(R);
 				} catch(RemoteException re) {
+					Log.e(TAG, "exception",re);
 					R =  Errors.SYSTEM_ERROR;
 				}
 				return R;
@@ -195,6 +197,7 @@ public class AppCore extends Application implements ServiceConnection {
 	private int _state  = 0;
 	@Override
 	public void onServiceDisconnected(ComponentName arg0) {
+		Log.d(TAG, "Service disconnected");
 		_storage = null;
 	}
 	protected FiscalStorage getStorage() {
@@ -204,16 +207,20 @@ public class AppCore extends Application implements ServiceConnection {
 	public void deinitialize() {
 		if(_storage != null) try {
 			unbindService(this);
-		} catch(Exception e) { }
+		} catch(Exception e) {
+			Log.e(TAG, "exception", e);
+		}
 	}
 	public FNOperaionTask newTask(Context context, final ProcessTask r, final ResultTask onResult ) {
 		return new FNOperaionTask(context,0) {
 			@Override
 			protected Integer doInBackground(Object... args) {
 				if(_storage == null) {
-					Log.d("FNCORE2", "Service lost?");
-					return Errors.SYSTEM_ERROR;
-					
+					Log.d(TAG, "Service lost?, trying reconnect");
+					if (initialize()!=CONNECTED) {
+						Log.d(TAG, "Service lost, reconnect failed");
+						return Errors.SYSTEM_ERROR;
+					}
 				}
 				return r.execute(_storage, this,args);
 			}
@@ -224,7 +231,6 @@ public class AppCore extends Application implements ServiceConnection {
 					onResult.onResult(result.intValue());
 			}
 		};
-		
 	}
 	public void invokeOnStorage(final StorageTask r) {
 		new Thread() {
@@ -236,7 +242,7 @@ public class AppCore extends Application implements ServiceConnection {
 	}
 	@Override
 	public void onBindingDied(ComponentName name) {
-		Log.d("FNCORE2","Bind died");
+		Log.d(TAG,"Bind died");
 		
 	}
 	@Override

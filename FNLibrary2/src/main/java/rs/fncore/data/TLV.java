@@ -1,5 +1,6 @@
 package rs.fncore.data;
 
+import android.util.Log;
 import android.util.SparseArray;
 
 import org.json.JSONArray;
@@ -20,6 +21,7 @@ public class TLV extends SparseArray<Tag> {
 
 	private static final String TAG_ID_TAG = "i";
 	private static final String TAGS_TAG = "tags";
+	private final String TAG=this.getClass().getName();
 
 	public TLV() {
 	}
@@ -34,6 +36,7 @@ public class TLV extends SparseArray<Tag> {
 			try {
 				put(tagId,new Tag(bb));
 			} catch(Exception e) {
+				Log.e(TAG,"exception",e);
 				return;
 			}
 		}
@@ -49,7 +52,9 @@ public class TLV extends SparseArray<Tag> {
 						put(o.getInt(TAG_ID_TAG),new Tag(o));
 				}
 			}
-		} catch(JSONException jse) { }
+		} catch(JSONException jse) {
+			Log.e(TAG,"exception",jse);
+		}
 	}
 	public TLV(int initialCapacity) {
 		super(initialCapacity);
@@ -115,7 +120,7 @@ public class TLV extends SparseArray<Tag> {
 			}
 			result.put(TAGS_TAG, tags);
 		} catch (JSONException jse) {
-
+			Log.e(TAG,"exception",jse);
 		}
 		return result;
 	}

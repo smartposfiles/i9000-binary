@@ -2,6 +2,7 @@ package rs.fncore.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,6 +17,7 @@ import rs.utils.Utils;
  */
 public class Location implements Parcelable {
 
+	private final String TAG=this.getClass().getName();
 	private static final String ADDRESS_TAG = "a";
 	private static final String PLACE_TAG = "p";
 	private String _address = Const.EMPTY_STRING;
@@ -29,7 +31,9 @@ public class Location implements Parcelable {
 		try {
 			result.put(ADDRESS_TAG, _address);
 			result.put(PLACE_TAG, _place);
-		} catch(JSONException jse) {}  
+		} catch(JSONException jse) {
+			Log.e(TAG,"exception",jse);
+		}
 		return result;
 	}
 	public Location() {

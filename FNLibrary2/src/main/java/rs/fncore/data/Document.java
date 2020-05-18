@@ -1,6 +1,7 @@
 package rs.fncore.data;
 
 import android.os.Parcel;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,7 +21,8 @@ public abstract class Document extends TLV implements IReableFromParcel {
 
 	private static final String CLASS_NAME_TAG = "Class";
 	private static final String LOCATION_TAG = "Location";
-	protected static final int DDL_VERSION = 100; 
+	protected static final int DDL_VERSION = 100;
+	private final String TAG=this.getClass().getName();
 
 	/**
 	 * Несовпадение версий документа
@@ -44,7 +46,9 @@ public abstract class Document extends TLV implements IReableFromParcel {
 		try {
 			if(json.has(LOCATION_TAG))
 				_location = new Location(json.getJSONObject(LOCATION_TAG));
-		} catch(JSONException jse) { }
+		} catch(JSONException jse) {
+			Log.e(TAG,"exception",jse);
+		}
 		
 	}
 	public Document() {
@@ -151,7 +155,9 @@ public abstract class Document extends TLV implements IReableFromParcel {
 		try {
 			result.put(CLASS_NAME_TAG, getClassName());
 			result.put(LOCATION_TAG, _location.toJSON());
-		} catch(JSONException jse) { }
+		} catch(JSONException jse) {
+			Log.e(TAG,"exception",jse);
+		}
 		return result;
 	}
 	

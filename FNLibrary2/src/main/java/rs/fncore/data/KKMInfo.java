@@ -2,6 +2,7 @@ package rs.fncore.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,7 +18,8 @@ import rs.fncore.Const;
  *
  */
 public class KKMInfo extends Document {
-	
+
+	private final String TAG=this.getClass().getName();
 	public static final String KKM_VERSION = "001";
 	public static final String FNS_URL = "www.nalog.ru";
 
@@ -156,7 +158,7 @@ public class KKMInfo extends Document {
 			_agentTypes = AgentType.decode((byte)json.getInt(AGENT_MODES_TAG));
 			_tax_modes = TaxMode.decode((byte)json.getInt(TAX_MODES_TAG));
 		} catch(JSONException jse) {
-			
+			Log.e(TAG,"exception",jse);
 		}
 	}
 	/**
@@ -339,6 +341,7 @@ public class KKMInfo extends Document {
 		try {
 			Integer.parseInt(v);
 		} catch(NumberFormatException nfe) {
+			Log.e(TAG,"exception",nfe);
 			return;
 		}
 		while(v.length() < 10) v = " "+v;
