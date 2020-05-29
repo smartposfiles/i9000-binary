@@ -61,7 +61,7 @@ public class Utils {
 	 * @return
 	 */
 	public static BigDecimal round2(BigDecimal number, int scale) {
-		return number.setScale(2, RoundingMode.HALF_UP);
+		return number.setScale(scale, RoundingMode.HALF_UP);
 	}
 	/**
 	 * Восстановить Parcelable из массива байт
