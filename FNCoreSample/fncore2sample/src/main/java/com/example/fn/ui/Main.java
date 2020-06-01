@@ -123,13 +123,12 @@ public class Main extends Activity  implements MessageHandler, View.OnClickListe
 		Core.getInstance().registerHandler(this);
 		Core.getInstance().addLogRecord("Инициализация ядра..");
 		// Подключаемся к фискальному ядру, это имеет смысл делать по окончании инициализации
-		switch(Core.getInstance().initialize()) {
-		case 1:
-			break;
-		case 2:
+		if(Core.getInstance().initialize()) {
 			Core.getInstance().addLogRecord(String.format("Инициализация завершена"));
 			updateKKMInfo();
-			break;
+		}
+		else{
+			Core.getInstance().addLogRecord(String.format("Инициализация завершается ... "));
 		}
 	}
 	@Override
