@@ -306,16 +306,16 @@ public class Correction extends Document {
         Arrays.fill(payments, BigDecimal.ZERO);
         for (Payment payment : _payments.values())
             payments[payment.getType().ordinal()] = payments[payment.getType().ordinal()].add(payment.getValue());
-//		if(payments[PaymentType.Cash.ordinal()] > 0)
+//      if(payments[PaymentType.Cash.ordinal()] > 0)
         add(1031, payments[PaymentType.Cash.ordinal()]);
 
-//		if(payments[PaymentType.Card.ordinal()] > 0)
+//      if(payments[PaymentType.Card.ordinal()] > 0)
         add(1081, payments[PaymentType.Card.ordinal()]);
-//		if(payments[PaymentType.Prepayment.ordinal()] > 0)
+//      if(payments[PaymentType.Prepayment.ordinal()] > 0)
         add(1215, payments[PaymentType.Prepayment.ordinal()]);
-//		if(payments[PaymentType.Credit.ordinal()] > 0)
+//      if(payments[PaymentType.Credit.ordinal()] > 0)
         add(1216, payments[PaymentType.Credit.ordinal()]);
-//		if(payments[PaymentType.Ahead.ordinal()] > 0)
+//      if(payments[PaymentType.Ahead.ordinal()] > 0)
         add(1217, payments[PaymentType.Ahead.ordinal()]);
 
         return super.pack();

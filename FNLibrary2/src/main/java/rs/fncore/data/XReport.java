@@ -2,81 +2,92 @@ package rs.fncore.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import rs.fncore.data.Payment.PaymentType;
 
-/**
- * Нефискальный отчет о сменных остатках
- *
- * @author nick
- */
 public class XReport implements IReableFromParcel {
-
     protected long _date;
-    protected Shift _shift = new Shift();
+
+    protected double[] _incomeSum = new double[PaymentType.values().length];
+    protected double[] _outcomeSum = new double[PaymentType.values().length];
+    protected double[] _returnIncomeSum = new double[PaymentType.values().length];
+    protected double[] _returnOutcomeSum = new double[PaymentType.values().length];
+
+    protected int _incomeCount = 0;
+    protected int _outcomeCount = 0;
+    protected int _returnIncomeCount = 0;
+    protected int _returnOutcomeCount = 0;
+
+    protected double _cashInSum = 0;
+    protected double _cashOutSum = 0;
+
+    protected int _cashInCount = 0;
+    protected int _cashOutCount = 0;
+
+    protected double _cashBoxSum = 0;
+
     protected OU _owner = new OU();
+    protected Shift _shift = new Shift();
 
-    protected double[] _income = new double[PaymentType.values().length],
-            _outcome = new double[PaymentType.values().length],
-            _rests = new double[PaymentType.values().length];
-
-    public XReport() {
-        // TODO Auto-generated constructor stub
-    }
-
-    /**
-     * Приход за смену по типу оплаты
-     *
-     * @param type
-     * @return
-     */
-    public double getIncome(PaymentType type) {
-        return _income[type.ordinal()];
-    }
-
-    /**
-     * Расход за смену по типу оплаты
-     *
-     * @param type
-     * @return
-     */
-    public double getSpend(PaymentType type) {
-        return _outcome[type.ordinal()];
-    }
-
-    /**
-     * Остаток за смену по типу оплаты
-     *
-     * @param type
-     * @return
-     */
-    public double getRest(PaymentType type) {
-        return _rests[type.ordinal()];
-    }
-
-    /**
-     * Информация о владельце ККМ
-     *
-     * @return
-     */
-    public OU getOwner() {
-        return _owner;
-    }
-
-    /**
-     * Дата формирования отчета
-     *
-     * @return
-     */
     public long getDate() {
         return _date;
     }
 
-    /**
-     * Смена
-     *
-     * @return
-     */
+    public double getIncomeSum(PaymentType type) {
+        return _incomeSum[type.ordinal()];
+    }
+
+    public double getOutcomeSum(PaymentType type) {
+        return _outcomeSum[type.ordinal()];
+    }
+
+    public double getReturnIncomeSum(PaymentType type) {
+        return _returnIncomeSum[type.ordinal()];
+    }
+
+    public double getReturnOutcomeSum(PaymentType type) {
+        return _outcomeSum[type.ordinal()];
+    }
+
+    public int getIncomeCount() {
+        return _incomeCount;
+    }
+
+    public int getOutcomeCount() {
+        return _outcomeCount;
+    }
+
+    public int getReturnIncomeCount() {
+        return _returnIncomeCount;
+    }
+
+    public int getReturnOutcomeCount() {
+        return _returnOutcomeCount;
+    }
+
+    public double getCashInSum() {
+        return _cashInSum;
+    }
+
+    public double getCashOutSum() {
+        return _cashOutSum;
+    }
+
+    public int getCashInCount() {
+        return _cashInCount;
+    }
+
+    public int getCashOutCount() {
+        return _cashOutCount;
+    }
+
+    public double getCashBoxSum() {
+        return _cashBoxSum;
+    }
+
+    public OU getOwner() {
+        return _owner;
+    }
+
     public Shift getShift() {
         return _shift;
     }
@@ -89,25 +100,56 @@ public class XReport implements IReableFromParcel {
     @Override
     public void writeToParcel(Parcel p, int flags) {
         p.writeLong(_date);
-        _shift.writeToParcel(p, flags);
+
+        p.writeDoubleArray(_incomeSum);
+        p.writeDoubleArray(_outcomeSum);
+        p.writeDoubleArray(_returnIncomeSum);
+        p.writeDoubleArray(_returnOutcomeSum);
+
+        p.writeInt(_incomeCount);
+        p.writeInt(_outcomeCount);
+        p.writeInt(_returnIncomeCount);
+        p.writeInt(_returnOutcomeCount);
+
+        p.writeDouble(_cashInSum);
+        p.writeDouble(_cashOutSum);
+
+        p.writeInt(_cashInCount);
+        p.writeInt(_cashOutCount);
+
+        p.writeDouble(_cashBoxSum);
+
         _owner.writeToParcel(p, flags);
-        p.writeDoubleArray(_income);
-        p.writeDoubleArray(_outcome);
-        p.writeDoubleArray(_rests);
+        _shift.writeToParcel(p, flags);
     }
 
     @Override
     public void readFromParcel(Parcel p) {
         _date = p.readLong();
-        _shift.readFromParcel(p);
+
+        p.readDoubleArray(_incomeSum);
+        p.readDoubleArray(_outcomeSum);
+        p.readDoubleArray(_returnIncomeSum);
+        p.readDoubleArray(_returnOutcomeSum);
+
+        _incomeCount = p.readInt();
+        _outcomeCount = p.readInt();
+        _returnIncomeCount = p.readInt();
+        _returnOutcomeCount = p.readInt();
+
+        _cashInSum = p.readDouble();
+        _cashOutSum = p.readDouble();
+
+        _cashInCount = p.readInt();
+        _cashOutCount = p.readInt();
+
+        _cashBoxSum = p.readDouble();
+
         _owner.readFromParcel(p);
-        p.readDoubleArray(_income);
-        p.readDoubleArray(_outcome);
-        p.readDoubleArray(_rests);
+        _shift.readFromParcel(p);
     }
 
     public static final Parcelable.Creator<XReport> CREATOR = new Parcelable.Creator<XReport>() {
-
         @Override
         public XReport createFromParcel(Parcel p) {
             XReport result = new XReport();
@@ -119,7 +161,5 @@ public class XReport implements IReableFromParcel {
         public XReport[] newArray(int size) {
             return new XReport[size];
         }
-
     };
-
 }

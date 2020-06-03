@@ -106,9 +106,9 @@ public class Tag {
     public Tag(Pair<Integer, Tag>[] tags) {
         this();
         _type = DataType.tlv;
-        for (int i = 0; i < tags.length; i++) {
-            _data.putShort((short) (tags[i].first.intValue() & 0xFFFF));
-            _data.put(tags[i].second.pack());
+        for (Pair<Integer, Tag> tag : tags) {
+            _data.putShort((short) (tag.first.intValue() & 0xFFFF));
+            _data.put(tag.second.pack());
         }
     }
 
