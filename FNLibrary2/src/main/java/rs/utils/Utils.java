@@ -1,9 +1,15 @@
 package rs.utils;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
@@ -61,7 +67,7 @@ public class Utils {
      * @return
      */
     public static BigDecimal round2(BigDecimal number, int scale) {
-        return number.setScale(2, RoundingMode.HALF_UP);
+        return number.setScale(scale, RoundingMode.HALF_UP);
     }
 
     /**
@@ -366,6 +372,22 @@ public class Utils {
             result[i] = (byte) (Integer.parseInt(s, 16) & 0xFF);
         }
         return result;
+    }
+
+    public static boolean startService(Context context){
+        ComponentName cn = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            cn = context.startForegroundService(Const.FISCAL_STORAGE);
+        } else {
+            cn = context.startService(Const.FISCAL_STORAGE);
+        }
+
+        if (cn == null){
+            Log.e(TAG, "can't start FNCore service");
+            return false;
+        }
+
+        return true;
     }
 
 }

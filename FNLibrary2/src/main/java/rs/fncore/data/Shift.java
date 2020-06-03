@@ -21,7 +21,6 @@ public class Shift extends Document {
     public Shift() {
     }
 
-
     @Override
     public void writeToParcel(Parcel p, int flags) {
         super.writeToParcel(p, flags);
@@ -31,8 +30,6 @@ public class Shift extends Document {
         p.writeInt(_is_open ? 1 : 0);
         p.writeInt(_warnings);
         _ofdState.writeToParcel(p, flags);
-        if (flags == 1)
-            _signature._operator.writeToParcel(p, flags);
     }
 
     @Override

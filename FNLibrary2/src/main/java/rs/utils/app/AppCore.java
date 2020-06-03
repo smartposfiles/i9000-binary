@@ -1,6 +1,7 @@
 package rs.utils.app;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.Application;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
@@ -18,6 +19,7 @@ import android.util.Log;
 import rs.fncore.Const;
 import rs.fncore.Const.Errors;
 import rs.fncore.FiscalStorage;
+import rs.utils.Utils;
 import rs.utils.app.MessageQueue.MessageHandler;
 
 /**
@@ -31,12 +33,15 @@ public class AppCore extends Application implements ServiceConnection {
 
     private final String TAG = this.getClass().getName();
     private Intent START_INTENT = Const.FISCAL_STORAGE;
-    public static final int NO_CONNECTION = 0;
-    public static final int CONNECTING = 1;
-    public static final int CONNECTED = 2;
+    private Object _storageLockObject = new Object();
+    private volatile boolean _dontWaitForFN = false;
 
-    public static interface StorageTask {
-        public void execute(FiscalStorage storage);
+    private MessageQueue _queue;
+    volatile private FiscalStorage _storage;
+    volatile boolean _killAll = false;
+
+    public interface StorageTask {
+        void execute(FiscalStorage storage);
     }
 
     /**
@@ -44,7 +49,7 @@ public class AppCore extends Application implements ServiceConnection {
      *
      * @author nick
      */
-    public static interface ProcessTask {
+    public interface ProcessTask {
         /**
          * Вызвается из потока, при исполнении FNOperationTask
          *
@@ -52,7 +57,7 @@ public class AppCore extends Application implements ServiceConnection {
          * @param task    - экземпляр FNOperationTask который вызвал интерфейс
          * @return - код возврата (константа из Const.Errors )
          */
-        public int execute(FiscalStorage storage, FNOperaionTask task, Object... args);
+        int execute(FiscalStorage storage, FNOperaionTask task, Object... args);
     }
 
     /**
@@ -60,13 +65,13 @@ public class AppCore extends Application implements ServiceConnection {
      *
      * @author nick
      */
-    public static interface ResultTask {
+    public interface ResultTask {
         /**
          * Вызывается из UI-потока
          *
          * @param result -код, который вернул ProcessTask
          */
-        public void onResult(int result);
+        void onResult(int result);
     }
 
     /**
@@ -141,9 +146,6 @@ public class AppCore extends Application implements ServiceConnection {
         }
     }
 
-    private MessageQueue _queue;
-    private FiscalStorage _storage;
-
     public AppCore() {
     }
 
@@ -152,26 +154,61 @@ public class AppCore extends Application implements ServiceConnection {
         _queue = new MessageQueue(this);
     }
 
-    ;
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Проинициализировать сервис фискального накопителя
-     *
+     * по умолчанию - ждать, когда появится ФН
      * @return
      */
-    public int initialize() {
-        if (_storage == null) {
-            if (START_INTENT == Const.FISCAL_STORAGE) {
-                ComponentName cn = null;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                    cn = startForegroundService(Const.FISCAL_STORAGE);
-                else
-                    cn = startService(Const.FISCAL_STORAGE);
-                if (cn == null) return NO_CONNECTION;
+    public boolean initialize() {
+        return initialize(false);
+    }
+
+    /**
+     * Проинициализировать сервис фискального накопителя
+     * @param dontWaitForFN - true не ждать, когда появится ФН, проинициализировать ,как есть,
+     *                        false - ждать, когда появится ФН
+     * @return
+     */
+    public boolean initialize(boolean dontWaitForFN) {
+        synchronized (_storageLockObject) {
+            _killAll = false;
+            _dontWaitForFN = dontWaitForFN;
+            if (_storage == null) {
+                if (START_INTENT == Const.FISCAL_STORAGE) {
+                    if (!Utils.startService(this)) return false;
+                }
+
+                return bindService(START_INTENT, this, BIND_AUTO_CREATE);
             }
-            return bindService(START_INTENT, this, BIND_AUTO_CREATE) == true ? CONNECTING : NO_CONNECTION;
+            return true;
         }
-        return CONNECTED;
+    }
+
+    public void deinitialize() {
+        _killAll = true;
+
+        synchronized (_storageLockObject) {
+            if (_storage != null) {
+                try {
+                    unbindService(this);
+                } catch (Exception e) {
+                    Log.e(TAG, "exception", e);
+                }
+                finally {
+                    _storage = null;
+                }
+            }
+        }
     }
 
     protected void setCoreIntent(Intent i) {
@@ -198,67 +235,101 @@ public class AppCore extends Application implements ServiceConnection {
     }
 
     protected void onConnected(int result) {
+        synchronized (_storageLockObject) {
+            _storageLockObject.notifyAll();
+        }
     }
 
     @Override
     public void onServiceConnected(ComponentName arg0, IBinder binder) {
-        _storage = FiscalStorage.Stub.asInterface(binder);
-        _state = 1;
-        new FNOperaionTask(this, MSG_FISCAL_STORAGE_READY) {
-            private int R = Errors.SYSTEM_ERROR;
+        synchronized (_storageLockObject) {
+            Log.d(TAG, "Service onServiceConnected");
+            _storage = FiscalStorage.Stub.asInterface(binder);
+            new FNOperaionTask(this, MSG_FISCAL_STORAGE_READY) {
+                private int R = Errors.SYSTEM_ERROR;
 
-            @Override
-            protected Integer doInBackground(Object... args) {
-                try {
-                    R = _storage.init();
-                    onConnected(R);
-                } catch (RemoteException re) {
-                    Log.e(TAG, "exception", re);
-                    R = Errors.SYSTEM_ERROR;
+                @Override
+                protected Integer doInBackground(Object... args) {
+                    synchronized (_storageLockObject) {
+                        try {
+                            if (_dontWaitForFN) {
+                                R = _storage.init();
+                            }
+                            else{
+                                do{
+                                    R = _storage.init();
+                                    try{
+                                        Thread.sleep(500);
+                                    }
+                                    catch (InterruptedException e){
+                                    }
+                                }while((R==Errors.DEVICE_ABSEND || !_storage.isReady()) && ! _killAll);
+                            }
+                            onConnected(R);
+                        } catch (Exception e) {
+                            Log.e(TAG, "exception", e);
+                            R = Errors.SYSTEM_ERROR;
+                        } finally {
+                            return R;
+                        }
+                    }
                 }
-                return R;
-            }
 
-            protected Object getResultData() {
-                return R;
-            }
-
-            ;
-        }.execute();
+                protected Object getResultData() {
+                    return R;
+                }
+            }.execute();
+        }
     }
-
-    private int _state = 0;
 
     @Override
     public void onServiceDisconnected(ComponentName arg0) {
-        Log.d(TAG, "Service disconnected");
-        _storage = null;
+        synchronized (_storageLockObject) {
+            Log.d(TAG, "Service onServiceDisconnected");
+            _storage = null;
+            try {
+                unbindService(this);
+            } catch (Exception e) {
+                Log.e(TAG, "exception", e);
+            }
+        }
     }
 
     protected FiscalStorage getStorage() {
-        return _storage;
-    }
-
-    public void deinitialize() {
-        if (_storage != null) try {
-            unbindService(this);
-        } catch (Exception e) {
-            Log.e(TAG, "exception", e);
+        synchronized (_storageLockObject) {
+            return _storage;
         }
     }
 
     public FNOperaionTask newTask(Context context, final ProcessTask r, final ResultTask onResult) {
+
         return new FNOperaionTask(context, 0) {
             @Override
             protected Integer doInBackground(Object... args) {
-                if (_storage == null) {
-                    Log.d(TAG, "Service lost?, trying reconnect");
-                    if (initialize() != CONNECTED) {
-                        Log.d(TAG, "Service lost, reconnect failed");
-                        return Errors.SYSTEM_ERROR;
+                synchronized (_storageLockObject) {
+                    if (_storage == null) {
+                        Log.d(TAG, "Service lost?, trying reconnect");
+                        if (!initialize()) {
+                            Log.d(TAG, "Service lost, reconnect failed, _storage=" + _storage);
+                            return Errors.SYSTEM_ERROR;
+                        }
+
+                        try {
+                            while (_storage == null || !_storage.isReady() && !_killAll) {
+                                Log.d(TAG, "waiting for storage ... ");
+                                _storageLockObject.wait(1000);
+                            }
+                        } catch (InterruptedException|RemoteException e) {
+                            Log.e(TAG, "Service lost wait exception:", e);
+                        }
+
+                        if (_storage == null) {
+                            Log.d(TAG, "Service lost, reconnect failed wait for _storage");
+                            return Errors.SYSTEM_ERROR;
+                        }
                     }
+                    return r.execute(_storage, this, args);
                 }
-                return r.execute(_storage, this, args);
             }
 
             @Override
@@ -281,14 +352,12 @@ public class AppCore extends Application implements ServiceConnection {
 
     @Override
     public void onBindingDied(ComponentName name) {
-        Log.d(TAG, "Bind died");
-
+        Log.e(TAG, "Service onBindingDied");
     }
 
     @Override
     public void onNullBinding(ComponentName name) {
-        // TODO Auto-generated method stub
-
+        Log.e(TAG, "Service onNullBinding");
     }
 
 }
