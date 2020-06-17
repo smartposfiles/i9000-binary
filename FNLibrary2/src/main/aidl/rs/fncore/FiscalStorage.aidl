@@ -57,4 +57,5 @@ interface FiscalStorage  {
     int closeShift(in OU operator, out Shift shift, String template);
 
     boolean isReady();
+    String execute(String action, String argsJson);
 }

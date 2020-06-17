@@ -1,8 +1,8 @@
 package rs.fncore.data;
 
 import android.os.Parcel;
-
 import rs.fncore.Const;
+import rs.fncore.FZ54Tag;
 
 /**
  * Данные агента
@@ -43,9 +43,9 @@ public class AgentData extends TLV implements IReableFromParcel {
      */
     public void setProviderPhone(String s) {
         if (s != null && !s.isEmpty())
-            put(1171, new Tag(s));
+            put(FZ54Tag.T1171_SUPPLIER_PHONE, new Tag(s));
         else
-            remove(1171);
+            remove(FZ54Tag.T1171_SUPPLIER_PHONE);
     }
 
     /**
@@ -54,8 +54,8 @@ public class AgentData extends TLV implements IReableFromParcel {
      * @return
      */
     public String getProviderPhone() {
-        if (hasTag(1171))
-            return get(1171).asString();
+        if (hasTag(FZ54Tag.T1171_SUPPLIER_PHONE))
+            return get(FZ54Tag.T1171_SUPPLIER_PHONE).asString();
         return Const.EMPTY_STRING;
     }
 
@@ -66,9 +66,9 @@ public class AgentData extends TLV implements IReableFromParcel {
      */
     public void setProviderName(String s) {
         if (s != null && !s.isEmpty())
-            put(1225, new Tag(s));
+            put(FZ54Tag.T1225_SUPPLIER_NAME, new Tag(s));
         else
-            remove(1225);
+            remove(FZ54Tag.T1225_SUPPLIER_NAME);
     }
 
     /**
@@ -77,8 +77,8 @@ public class AgentData extends TLV implements IReableFromParcel {
      * @return
      */
     public String getProviderName() {
-        if (hasTag(1225))
-            return get(1225).toString();
+        if (hasTag(FZ54Tag.T1225_SUPPLIER_NAME))
+            return get(FZ54Tag.T1225_SUPPLIER_NAME).toString();
         return Const.EMPTY_STRING;
     }
 
@@ -89,9 +89,9 @@ public class AgentData extends TLV implements IReableFromParcel {
      */
     public void setOperatorPhone(String s) {
         if (s != null && !s.isEmpty())
-            put(1075, new Tag(s));
+            put(FZ54Tag.T1075_TRANSFER_OPERATOR_PHONE, new Tag(s));
         else
-            remove(1075);
+            remove(FZ54Tag.T1075_TRANSFER_OPERATOR_PHONE);
     }
 
     /**
@@ -100,8 +100,8 @@ public class AgentData extends TLV implements IReableFromParcel {
      * @return
      */
     public String getOperatorPhone() {
-        if (hasTag(1075))
-            return get(1075).asString();
+        if (hasTag(FZ54Tag.T1075_TRANSFER_OPERATOR_PHONE))
+            return get(FZ54Tag.T1075_TRANSFER_OPERATOR_PHONE).asString();
         return Const.EMPTY_STRING;
     }
 
@@ -135,5 +135,4 @@ public class AgentData extends TLV implements IReableFromParcel {
         while (count-- > 0)
             put(p.readInt(), new Tag(p));
     }
-
 }

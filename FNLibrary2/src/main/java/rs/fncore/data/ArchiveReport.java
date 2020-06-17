@@ -2,8 +2,8 @@ package rs.fncore.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import rs.fncore.Const;
+import rs.fncore.FZ54Tag;
 
 /**
  * Отчет о переводе ФН в постфискальный режим
@@ -59,7 +59,7 @@ public class ArchiveReport extends Document {
      * @return
      */
     public int getShiftNumber() {
-        return get(1038).asInt();
+        return get(FZ54Tag.T1038_SHIFT_NO).asInt();
     }
 
     public static final Parcelable.Creator<ArchiveReport> CREATOR = new Parcelable.Creator<ArchiveReport>() {

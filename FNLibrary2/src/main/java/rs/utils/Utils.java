@@ -44,6 +44,15 @@ public class Utils {
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     public static final DateFormat DATE_FORMAT_S = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
+    public static String getStackTrace(){
+        String res="";
+        StackTraceElement elem[] = Thread.currentThread().getStackTrace();
+        for (int i=3;i<elem.length;i++) {
+            res+="\n"+elem[i].toString();
+        }
+        return res;
+    }
+
     /**
      * Округление до указанного количества знаков после запятой
      *

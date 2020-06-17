@@ -2,16 +2,14 @@ package rs.fncore.data;
 
 import android.os.Parcel;
 import android.util.Log;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.json.JSONException;
+import org.json.JSONObject;
 import rs.fncore.Const;
+import rs.fncore.FZ54Tag;
 
 /**
  * Фискальный документ
@@ -55,8 +53,8 @@ public abstract class Document extends TLV implements IReableFromParcel {
     }
 
     public Document() {
-        add(1009, Const.EMPTY_STRING);
-        add(1187, Const.EMPTY_STRING);
+        add(FZ54Tag.T1009_TRANSACTION_ADDR, Const.EMPTY_STRING);
+        add(FZ54Tag.T1187_TRANSACTION_PLACE, Const.EMPTY_STRING);
     }
 
     /**
@@ -66,8 +64,9 @@ public abstract class Document extends TLV implements IReableFromParcel {
      * @return
      */
     public byte[][] pack() {
-        add(1009, _location.getAddress());
-        add(1187, _location.getPlace());
+        add(FZ54Tag.T1009_TRANSACTION_ADDR, _location.getAddress());
+        add(FZ54Tag.T1187_TRANSACTION_PLACE, _location.getPlace());
+
         List<byte[]> result = new ArrayList<>();
         ByteBuffer buffer = ByteBuffer.allocate(Const.MAX_TAG_SIZE);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -178,5 +177,4 @@ public abstract class Document extends TLV implements IReableFromParcel {
         }
         return result;
     }
-
 }
