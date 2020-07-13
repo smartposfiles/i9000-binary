@@ -3,15 +3,13 @@ package rs.fncore.data;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
-
+import org.json.JSONException;
+import org.json.JSONObject;
 import rs.fncore.Const;
+import rs.fncore.FZ54Tag;
 
 /**
  * Отчет о регистрации (состоянии) ККМ
@@ -152,16 +150,16 @@ public class KKMInfo extends Document {
 
     public KKMInfo() {
         super();
-        add(1193, false);
-        add(1126, false);
-        add(1207, false);
-        add(1013, Const.EMPTY_STRING);
-        add(1209, FFDVersion.ver105.bVal());
-        add(1189, FFDVersion.ver105.bVal());
-        add(1188, KKM_VERSION);
-        add(1117, Const.EMPTY_STRING);
-        add(1057, (byte) 0);
-        add(1060, FNS_URL);
+        add(FZ54Tag.T1193_GAMBLING_FLAG, false);
+        add(FZ54Tag.T1126_LOTTERY_FLAG, false);
+        add(FZ54Tag.T1207_EXCISE_GOODS_FLAG, false);
+        add(FZ54Tag.T1013_KKT_SERIAL_NO, Const.EMPTY_STRING);
+        add(FZ54Tag.T1209_FFD_VERSION, FFDVersion.ver105.bVal());
+        add(FZ54Tag.T1189_KKT_FFD_VERSION, FFDVersion.ver105.bVal());
+        add(FZ54Tag.T1188_KKT_VERSION, KKM_VERSION);
+        add(FZ54Tag.T1117_SENDER_EMAIL, Const.EMPTY_STRING);
+        add(FZ54Tag.T1057_AGENT_FLAG, (byte) 0);
+        add(FZ54Tag.T1060_FNS_URL, FNS_URL);
     }
 
 
@@ -187,7 +185,7 @@ public class KKMInfo extends Document {
      * @return
      */
     public String getKKMSerial() {
-        return get(1013).asString();
+        return get(FZ54Tag.T1013_KKT_SERIAL_NO).asString();
     }
 
     /**
@@ -251,10 +249,10 @@ public class KKMInfo extends Document {
      */
     public FFDVersion getFFDProtocolVersion() {
         byte bVal = 0;
-        if (hasTag(1209))
-            bVal = get(1209).asByte();
+        if (hasTag(FZ54Tag.T1209_FFD_VERSION))
+            bVal = get(FZ54Tag.T1209_FFD_VERSION).asByte();
         else
-            bVal = get(1189).asByte();
+            bVal = get(FZ54Tag.T1189_KKT_FFD_VERSION).asByte();
         return FFDVersion.find(bVal);
     }
 
@@ -264,8 +262,8 @@ public class KKMInfo extends Document {
      * @param ver
      */
     public void setFFDProtocolVersion(FFDVersion ver) {
-        add(1209, ver.bVal());
-        add(1189, ver.bVal());
+        add(FZ54Tag.T1209_FFD_VERSION, ver.bVal());
+        add(FZ54Tag.T1189_KKT_FFD_VERSION, ver.bVal());
     }
 
     public FNConnectionMode getConnectionMode() {
@@ -333,7 +331,7 @@ public class KKMInfo extends Document {
      * @return
      */
     public boolean isExcisesMode() {
-        return get(1207).asBoolean();
+        return get(FZ54Tag.T1207_EXCISE_GOODS_FLAG).asBoolean();
     }
 
     /**
@@ -342,7 +340,7 @@ public class KKMInfo extends Document {
      * @param val
      */
     public void setExcisesMode(boolean val) {
-        add(1207, val);
+        add(FZ54Tag.T1207_EXCISE_GOODS_FLAG, val);
     }
 
     /**
@@ -351,7 +349,7 @@ public class KKMInfo extends Document {
      * @return
      */
     public boolean isLotteryMode() {
-        return get(1126).asBoolean();
+        return get(FZ54Tag.T1126_LOTTERY_FLAG).asBoolean();
     }
 
     /**
@@ -360,7 +358,7 @@ public class KKMInfo extends Document {
      * @param val
      */
     public void setLotteryMode(boolean val) {
-        add(1126, val);
+        add(FZ54Tag.T1126_LOTTERY_FLAG, val);
     }
 
     /**
@@ -369,7 +367,7 @@ public class KKMInfo extends Document {
      * @return
      */
     public boolean isCasinoMode() {
-        return get(1193).asBoolean();
+        return get(FZ54Tag.T1193_GAMBLING_FLAG).asBoolean();
     }
 
     /**
@@ -378,7 +376,7 @@ public class KKMInfo extends Document {
      * @param val
      */
     public void setCasinoMode(boolean val) {
-        add(1193, val);
+        add(FZ54Tag.T1193_GAMBLING_FLAG, val);
     }
 
     /**
@@ -392,16 +390,16 @@ public class KKMInfo extends Document {
     public void setAutomatedMode(boolean val) {
         if (val) {
             _work_modes |= AUTO_MODE;
-            put(1036, new Tag(String.format("% 20d", 1)));
+            put(FZ54Tag.T1036_AUTOMAT_NO, new Tag(String.format("% 20d", 1)));
         } else {
             _work_modes &= ~AUTO_MODE;
-            remove(1036);
+            remove(FZ54Tag.T1036_AUTOMAT_NO);
         }
     }
 
     public String getAutomateNumber() {
         if (isAutomatedMode())
-            return get(1036).asString();
+            return get(FZ54Tag.T1036_AUTOMAT_NO).asString();
         return Const.EMPTY_STRING;
     }
 
@@ -414,7 +412,7 @@ public class KKMInfo extends Document {
             return;
         }
         while (v.length() < 10) v = " " + v;
-        put(1036, new Tag(v));
+        put(FZ54Tag.T1036_AUTOMAT_NO, new Tag(v));
 
     }
 
@@ -428,7 +426,7 @@ public class KKMInfo extends Document {
      * @return
      */
     public String getSenderEmail() {
-        return get(1117).asString();
+        return get(FZ54Tag.T1117_SENDER_EMAIL).asString();
     }
 
     /**
@@ -437,7 +435,7 @@ public class KKMInfo extends Document {
      * @param value
      */
     public void setSenderEmail(String value) {
-        add(1117, value);
+        add(FZ54Tag.T1117_SENDER_EMAIL, value);
     }
 
     /**
@@ -525,7 +523,7 @@ public class KKMInfo extends Document {
      * @return
      */
     public String getFNSUrl() {
-        return get(1060).asString();
+        return get(FZ54Tag.T1060_FNS_URL).asString();
     }
 
     /**
@@ -534,7 +532,7 @@ public class KKMInfo extends Document {
      * @param value
      */
     public void setFNSUrl(String value) {
-        add(1060, value);
+        add(FZ54Tag.T1060_FNS_URL, value);
     }
 
     /**
@@ -612,7 +610,7 @@ public class KKMInfo extends Document {
 
     @Override
     public byte[][] pack() {
-        add(1057, AgentType.encode(_agentTypes));
+        add(FZ54Tag.T1057_AGENT_FLAG, AgentType.encode(_agentTypes));
         return super.pack();
     }
 

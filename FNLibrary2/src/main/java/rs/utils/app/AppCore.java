@@ -11,7 +11,6 @@ import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -167,6 +166,7 @@ public class AppCore extends Application implements ServiceConnection {
     /**
      * Проинициализировать сервис фискального накопителя
      * по умолчанию - ждать, когда появится ФН
+     *
      * @return
      */
     public boolean initialize() {
@@ -175,8 +175,9 @@ public class AppCore extends Application implements ServiceConnection {
 
     /**
      * Проинициализировать сервис фискального накопителя
+     *
      * @param dontWaitForFN - true не ждать, когда появится ФН, проинициализировать ,как есть,
-     *                        false - ждать, когда появится ФН
+     *                      false - ждать, когда появится ФН
      * @return
      */
     public boolean initialize(boolean dontWaitForFN) {
@@ -203,8 +204,7 @@ public class AppCore extends Application implements ServiceConnection {
                     unbindService(this);
                 } catch (Exception e) {
                     Log.e(TAG, "exception", e);
-                }
-                finally {
+                } finally {
                     _storage = null;
                 }
             }
@@ -254,16 +254,19 @@ public class AppCore extends Application implements ServiceConnection {
                         try {
                             if (_dontWaitForFN) {
                                 R = _storage.init();
-                            }
-                            else{
-                                do{
+                            } else {
+                                while (!_killAll) {
                                     R = _storage.init();
-                                    try{
+
+                                    if (R != Errors.DEVICE_ABSEND && _storage.isReady()) {
+                                        break;
+                                    }
+
+                                    try {
                                         Thread.sleep(500);
+                                    } catch (InterruptedException e) {
                                     }
-                                    catch (InterruptedException e){
-                                    }
-                                }while((R==Errors.DEVICE_ABSEND || !_storage.isReady()) && ! _killAll);
+                                }
                             }
                             onConnected(R);
                         } catch (Exception e) {
@@ -319,7 +322,7 @@ public class AppCore extends Application implements ServiceConnection {
                                 Log.d(TAG, "waiting for storage ... ");
                                 _storageLockObject.wait(1000);
                             }
-                        } catch (InterruptedException|RemoteException e) {
+                        } catch (InterruptedException | RemoteException e) {
                             Log.e(TAG, "Service lost wait exception:", e);
                         }
 

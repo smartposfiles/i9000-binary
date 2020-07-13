@@ -3,7 +3,6 @@ package rs.fncore.data;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Pair;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,8 +11,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import rs.fncore.Const;
+import rs.fncore.FZ54Tag;
 import rs.fncore.data.Payment.PaymentType;
 import rs.fncore.data.SellItem.VAT;
 import rs.fncore.data.SellOrder.OrderType;
@@ -274,49 +273,50 @@ public class Correction extends Document {
     @SuppressWarnings("unchecked")
     @Override
     public byte[][] pack() {
-        add(1055, _vat.bVal());
-        add(1173, _type.bValue());
-        put(1174, new Tag(new Pair[]{
-                new Pair<Integer, Tag>(1179, new Tag(_baseDocumentNo))
-                , new Pair<Integer, Tag>(1178, new Tag((int) (_baseDocumentDate / 1000)))
-        }));
+        add(FZ54Tag.T1055_USED_TAX_SYSTEM, _vat.bVal());
+        add(FZ54Tag.T1173_CORRECTION_TYPE, _type.bValue());
+        put(FZ54Tag.T1174_CORRECTION_REASON_TLV, new Tag(new Pair[]{
+                    new Pair<Integer, Tag>(FZ54Tag.T1179_CORRECTION_BASE_NO, new Tag(_baseDocumentNo)),
+                    new Pair<Integer, Tag>(FZ54Tag.T1178_CORRECTION_BASE_DATE,
+                    new Tag((int) (_baseDocumentDate / 1000)))
+                }));
         switch (_vat) {
-            case vat_18:
-            case vat_20:
-                add(1102, getVATValue());
-                break;
-            case vat_18_118:
-            case vat_20_120:
-                add(1106, getVATValue());
-                break;
-            case vat_10:
-                add(1103, getVATValue());
-                break;
-            case vat_10_110:
-                add(1107, getVATValue());
-                break;
-            case vat_none:
-                add(1105, getSum());
-                break;
-            case vat_0:
-                add(1104, getSum());
-                break;
+        case vat_18:
+        case vat_20:
+            add(FZ54Tag.T1102_VAT_20_SUM, getVATValue());
+            break;
+        case vat_18_118:
+        case vat_20_120:
+            add(FZ54Tag.T1106_VAT_20_120_SUM, getVATValue());
+            break;
+        case vat_10:
+            add(FZ54Tag.T1103_VAT_10_SUM, getVATValue());
+            break;
+        case vat_10_110:
+            add(FZ54Tag.T1107_VAT_10_110_SUM, getVATValue());
+            break;
+        case vat_none:
+            add(FZ54Tag.T1105_NO_VAT_SUM, getSum());
+            break;
+        case vat_0:
+            add(FZ54Tag.T1104_VAT_0_SUM, getSum());
+            break;
         }
         BigDecimal[] payments = new BigDecimal[PaymentType.values().length];
         Arrays.fill(payments, BigDecimal.ZERO);
         for (Payment payment : _payments.values())
             payments[payment.getType().ordinal()] = payments[payment.getType().ordinal()].add(payment.getValue());
 //      if(payments[PaymentType.Cash.ordinal()] > 0)
-        add(1031, payments[PaymentType.Cash.ordinal()]);
+        add(FZ54Tag.T1031_CASH_SUM, payments[PaymentType.Cash.ordinal()]);
 
 //      if(payments[PaymentType.Card.ordinal()] > 0)
-        add(1081, payments[PaymentType.Card.ordinal()]);
+        add(FZ54Tag.T1081_CARD_SUM, payments[PaymentType.Card.ordinal()]);
 //      if(payments[PaymentType.Prepayment.ordinal()] > 0)
-        add(1215, payments[PaymentType.Prepayment.ordinal()]);
+        add(FZ54Tag.T1215_PREPAY_SUM, payments[PaymentType.Prepayment.ordinal()]);
 //      if(payments[PaymentType.Credit.ordinal()] > 0)
-        add(1216, payments[PaymentType.Credit.ordinal()]);
+        add(FZ54Tag.T1216_POSTPAY_SUM, payments[PaymentType.Credit.ordinal()]);
 //      if(payments[PaymentType.Ahead.ordinal()] > 0)
-        add(1217, payments[PaymentType.Ahead.ordinal()]);
+        add(FZ54Tag.T1217_OTHER_SUM, payments[PaymentType.Ahead.ordinal()]);
 
         return super.pack();
     }
@@ -334,6 +334,5 @@ public class Correction extends Document {
         public Correction[] newArray(int size) {
             return new Correction[size];
         }
-
     };
 }
