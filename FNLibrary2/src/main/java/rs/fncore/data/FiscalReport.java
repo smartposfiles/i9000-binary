@@ -2,6 +2,7 @@ package rs.fncore.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import rs.fncore.FZ54Tag;
 
 /**
  * Отчет о состоянии расчетов
@@ -58,7 +59,7 @@ public class FiscalReport extends Document {
      * @return
      */
     public boolean isKKMOffline() {
-        return hasTag(1002);
+        return hasTag(FZ54Tag.T1002_AUTONOMOUS_MODE);
     }
 
     public static final Parcelable.Creator<FiscalReport> CREATOR = new Parcelable.Creator<FiscalReport>() {
@@ -73,7 +74,6 @@ public class FiscalReport extends Document {
         public FiscalReport[] newArray(int size) {
             return new FiscalReport[size];
         }
-
     };
 
     @Override

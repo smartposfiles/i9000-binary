@@ -2,7 +2,6 @@ package rs.fncore.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,8 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import rs.fncore.Const;
+import rs.fncore.FZ54Tag;
 import rs.fncore.data.Payment.PaymentType;
 import rs.fncore.data.SellItem.ItemPaymentType;
 import rs.fncore.data.SellItem.VAT;
@@ -69,7 +68,7 @@ public class SellOrder extends Document {
 
     public SellOrder(OrderType type, TaxMode mode) {
         _type = type;
-        add(1055, mode.bValue());
+        add(FZ54Tag.T1055_USED_TAX_SYSTEM, mode.bValue());
     }
 
     /**
@@ -82,7 +81,7 @@ public class SellOrder extends Document {
     }
 
     public TaxMode getTaxMode() {
-        return TaxMode.decodeOne(get(1055).asByte());
+        return TaxMode.decodeOne(get(FZ54Tag.T1055_USED_TAX_SYSTEM).asByte());
     }
 
     @Override
@@ -128,9 +127,10 @@ public class SellOrder extends Document {
 
     @Override
     public byte[][] pack() {
-        remove(1224);
-        remove(1223);
-        remove(1057);
+        remove(FZ54Tag.T1224_SUPPLIER_DATA_TLV);
+        remove(FZ54Tag.T1223_AGENT_DATA_TLV);
+        remove(FZ54Tag.T1057_AGENT_FLAG);
+
         Set<AgentType> agents = new HashSet<>();
         BigDecimal vat[] = new BigDecimal[VAT.values().length];
         Arrays.fill(vat, BigDecimal.ZERO);
@@ -139,41 +139,42 @@ public class SellOrder extends Document {
             if (item.getAgentData().getType() != null)
                 agents.add(item.getAgentData().getType());
         }
+
         if (vat[VAT.vat_20.ordinal()].compareTo(BigDecimal.ZERO) == 1)
-            add(1102, vat[VAT.vat_20.ordinal()]);
+            add(FZ54Tag.T1102_VAT_20_SUM, vat[VAT.vat_20.ordinal()]);
         else if (vat[VAT.vat_18.ordinal()].compareTo(BigDecimal.ZERO) == 1)
-            add(1102, vat[VAT.vat_18.ordinal()]);
+            add(FZ54Tag.T1102_VAT_20_SUM, vat[VAT.vat_18.ordinal()]);
         if (vat[VAT.vat_10.ordinal()].compareTo(BigDecimal.ZERO) == 1)
-            add(1103, vat[VAT.vat_10.ordinal()]);
+            add(FZ54Tag.T1103_VAT_10_SUM, vat[VAT.vat_10.ordinal()]);
         if (vat[VAT.vat_20_120.ordinal()].compareTo(BigDecimal.ZERO) == 1)
-            add(1106, vat[VAT.vat_20_120.ordinal()]);
+            add(FZ54Tag.T1106_VAT_20_120_SUM, vat[VAT.vat_20_120.ordinal()]);
         else if (vat[VAT.vat_18_118.ordinal()].compareTo(BigDecimal.ZERO) == 1)
-            add(1106, vat[VAT.vat_18_118.ordinal()]);
+            add(FZ54Tag.T1106_VAT_20_120_SUM, vat[VAT.vat_18_118.ordinal()]);
         if (vat[VAT.vat_10_110.ordinal()].compareTo(BigDecimal.ZERO) == 1)
-            add(1107, vat[VAT.vat_10_110.ordinal()]);
+            add(FZ54Tag.T1107_VAT_10_110_SUM, vat[VAT.vat_10_110.ordinal()]);
         if (vat[VAT.vat_0.ordinal()].compareTo(BigDecimal.ZERO) == 1)
-            add(1104, vat[VAT.vat_0.ordinal()]);
+            add(FZ54Tag.T1104_VAT_0_SUM, vat[VAT.vat_0.ordinal()]);
         if (vat[VAT.vat_none.ordinal()].compareTo(BigDecimal.ZERO) == 1)
-            add(1105, vat[VAT.vat_none.ordinal()]);
+            add(FZ54Tag.T1105_NO_VAT_SUM, vat[VAT.vat_none.ordinal()]);
         BigDecimal[] payments = new BigDecimal[PaymentType.values().length];
         Arrays.fill(payments, BigDecimal.ZERO);
         for (Payment payment : _payments.values())
             payments[payment.getType().ordinal()] = payment.getValue();
 //      if (payments[PaymentType.Cash.ordinal()] > 0)
-        add(1031, payments[PaymentType.Cash.ordinal()]);
+        add(FZ54Tag.T1031_CASH_SUM, payments[PaymentType.Cash.ordinal()]);
 
 //      if (payments[PaymentType.Card.ordinal()] > 0)
-        add(1081, payments[PaymentType.Card.ordinal()]);
+        add(FZ54Tag.T1081_CARD_SUM, payments[PaymentType.Card.ordinal()]);
 //      if (payments[PaymentType.Prepayment.ordinal()] > 0)
-        add(1215, payments[PaymentType.Prepayment.ordinal()]);
+        add(FZ54Tag.T1215_PREPAY_SUM, payments[PaymentType.Prepayment.ordinal()]);
 //      if (payments[PaymentType.Credit.ordinal()] > 0)
-        add(1216, payments[PaymentType.Credit.ordinal()]);
+        add(FZ54Tag.T1216_POSTPAY_SUM, payments[PaymentType.Credit.ordinal()]);
 //      if (payments[PaymentType.Ahead.ordinal()] > 0)
-        add(1217, payments[PaymentType.Ahead.ordinal()]);
+        add(FZ54Tag.T1217_OTHER_SUM, payments[PaymentType.Ahead.ordinal()]);
         if (!_recipientAddress.isEmpty()) {
-            add(1008, _recipientAddress);
+            add(FZ54Tag.T1008_BUYER_PHONE_EMAIL, _recipientAddress);
             if (!_senderEmail.isEmpty())
-                add(1117, _senderEmail);
+                add(FZ54Tag.T1117_SENDER_EMAIL, _senderEmail);
         }
 
         if (_agentData.getType() != null) {
@@ -183,14 +184,14 @@ public class SellOrder extends Document {
             for (int id : SellItem.TAGS_1223)
                 tlv.put(id, _agentData.get(id));
             if (tlv.size() > 0)
-                put(1223, new Tag(tlv));
+                put(FZ54Tag.T1223_AGENT_DATA_TLV, new Tag(tlv));
             for (int id : SellItem.TAGS_1224)
                 tlv.put(id, _agentData.get(id));
             if (tlv.size() > 0)
-                put(1224, new Tag(tlv));
+                put(FZ54Tag.T1224_SUPPLIER_DATA_TLV, new Tag(tlv));
         }
         if (!agents.isEmpty())
-            add(1057, AgentType.encode(agents));
+            add(FZ54Tag.T1057_AGENT_FLAG, AgentType.encode(agents));
         return super.pack();
     }
 
@@ -385,5 +386,4 @@ public class SellOrder extends Document {
     public String getClassName() {
         return SellOrder.class.getName();
     }
-
 }

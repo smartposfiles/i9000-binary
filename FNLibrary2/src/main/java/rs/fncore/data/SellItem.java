@@ -1,11 +1,10 @@
 package rs.fncore.data;
 
 import android.os.Parcel;
-
 import java.math.BigDecimal;
 import java.math.MathContext;
-
 import rs.fncore.Const;
+import rs.fncore.FZ54Tag;
 import rs.utils.Utils;
 
 /**
@@ -18,11 +17,23 @@ public class SellItem extends TLV implements IReableFromParcel {
     /**
      * Поля тега 1224 (для внутреннего использования)
      */
-    public static final int[] TAGS_1224 = {1171, 1225};
+    public static final int[] TAGS_1224 = {
+        FZ54Tag.T1171_SUPPLIER_PHONE,
+        FZ54Tag.T1225_SUPPLIER_NAME
+    };
+
     /**
      * Поля тега 1223 (для внутреннего использования)
      */
-    public static final int[] TAGS_1223 = {1075, 1044, 1073, 1074, 1026, 1005, 1016};
+    public static final int[] TAGS_1223 = {
+        FZ54Tag.T1075_TRANSFER_OPERATOR_PHONE,
+        FZ54Tag.T1044_TRANSFER_OPERATOR_ACTION,
+        FZ54Tag.T1073_PAYMENT_AGENT_PHONE,
+        FZ54Tag.T1074_PAYMENT_OPERATOR_PHONE,
+        FZ54Tag.T1026_TRANSFER_OPERATOR_NAME,
+        FZ54Tag.T1005_TRANSFER_OPERATOR_ADDR,
+        FZ54Tag.T1016_TRANSFER_OPERATOR_INN
+    };
 
     /**
      * Ставка НДС
@@ -48,20 +59,19 @@ public class SellItem extends TLV implements IReableFromParcel {
          */
         public BigDecimal calc(BigDecimal sum) {
             switch (this) {
-                case vat_20:
-                case vat_20_120:
-                    return sum.multiply(new BigDecimal(20.0)).divide(new BigDecimal(120.0), MathContext.DECIMAL128);
-                case vat_10:
-                case vat_10_110:
-                    return sum.multiply(new BigDecimal(10.0)).divide(new BigDecimal(110.0), MathContext.DECIMAL128);
-                case vat_18:
-                case vat_18_118:
-                    return sum.multiply(new BigDecimal(18.0)).divide(new BigDecimal(118.0), MathContext.DECIMAL128);
-                default:
-                    return sum;
+            case vat_20:
+            case vat_20_120:
+                return sum.multiply(new BigDecimal(20.0)).divide(new BigDecimal(120.0), MathContext.DECIMAL128);
+            case vat_10:
+            case vat_10_110:
+                return sum.multiply(new BigDecimal(10.0)).divide(new BigDecimal(110.0), MathContext.DECIMAL128);
+            case vat_18:
+            case vat_18_118:
+                return sum.multiply(new BigDecimal(18.0)).divide(new BigDecimal(118.0), MathContext.DECIMAL128);
+            default:
+                return sum;
             }
         }
-
     }
 
     /**
@@ -143,7 +153,7 @@ public class SellItem extends TLV implements IReableFromParcel {
     private AgentData _agentData = new AgentData();
 
     public SellItem(SellItemType type, ItemPaymentType paymentType, String name, BigDecimal qtty, String measure,
-                    BigDecimal price, VAT vat) {
+        BigDecimal price, VAT vat) {
         _type = type;
         _name = name;
         _qtty = qtty;
@@ -155,7 +165,7 @@ public class SellItem extends TLV implements IReableFromParcel {
 
     public SellItem(String name, BigDecimal qtty, BigDecimal price, VAT vat) {
         this(SellItemType.Good, ItemPaymentType.Full, name, qtty, (qtty.remainder(BigDecimal.ONE).compareTo(new BigDecimal(0.001)) == -1 ? "шт." : "кг."), price,
-                vat);
+            vat);
     }
 
     public SellItem(String name, BigDecimal qtty, String measure, BigDecimal price, VAT vat) {
@@ -263,9 +273,10 @@ public class SellItem extends TLV implements IReableFromParcel {
      * @return
      */
     public Tag pack() {
-        remove(1224);
-        remove(1223);
-        remove(1057);
+        remove(FZ54Tag.T1224_SUPPLIER_DATA_TLV);
+        remove(FZ54Tag.T1223_AGENT_DATA_TLV);
+        remove(FZ54Tag.T1057_AGENT_FLAG);
+
         if (_measure == null || _measure.isEmpty()) {
             if (_qtty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) == 1)
                 _measure = "кг";
@@ -277,22 +288,22 @@ public class SellItem extends TLV implements IReableFromParcel {
             for (int id : TAGS_1223)
                 tlv.put(id, _agentData.get(id));
             if (tlv.size() > 0)
-                put(1223, new Tag(tlv));
+                put(FZ54Tag.T1223_AGENT_DATA_TLV, new Tag(tlv));
             for (int id : TAGS_1224)
                 tlv.put(id, _agentData.get(id));
             if (tlv.size() > 0)
-                put(1224, new Tag(tlv));
+                put(FZ54Tag.T1224_SUPPLIER_DATA_TLV, new Tag(tlv));
         }
-        put(1214, new Tag(_paymentType.bVal()));
-        put(1212, new Tag(_type.bVal()));
-        put(1030, new Tag(_name));
-        put(1197, new Tag(_measure));
-        put(1079, new Tag(_price, 2));
-        put(1023, new Tag(_qtty, 3));
-        put(1199, new Tag(_vat.bVal()));
-        put(1043, new Tag(getSum(), 2));
+        put(FZ54Tag.T1214_PAYMENT_TYPE, new Tag(_paymentType.bVal()));
+        put(FZ54Tag.T1212_ITEM_TYPE, new Tag(_type.bVal()));
+        put(FZ54Tag.T1030_SUBJECT, new Tag(_name));
+        put(FZ54Tag.T1197_ITEM_UNIT_NAME, new Tag(_measure));
+        put(FZ54Tag.T1079_ONE_ITEM_PRICE, new Tag(_price, 2));
+        put(FZ54Tag.T1023_QUANTITY, new Tag(_qtty, 3));
+        put(FZ54Tag.T1199_VAT_ID, new Tag(_vat.bVal()));
+        put(FZ54Tag.T1043_ITEM_PRICE, new Tag(getSum(), 2));
         if (_vat != VAT.vat_none && _vat != VAT.vat_0)
-            put(1200, new Tag(getVATValue(), 2));
+            put(FZ54Tag.T1200_ITEM_VAT, new Tag(getVATValue(), 2));
         return new Tag(this);
     }
 
@@ -328,5 +339,4 @@ public class SellItem extends TLV implements IReableFromParcel {
             put(p.readInt(), new Tag(p));
         _agentData.readFromParcel(p);
     }
-
 }
