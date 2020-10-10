@@ -86,7 +86,7 @@ public class OU implements IReableFromParcel {
         String s = _inn;
         if (padded)
             while (s.length() < 12)
-                s = "0" + s;
+                s = s+" ";
         return s;
     }
 
@@ -97,6 +97,7 @@ public class OU implements IReableFromParcel {
      */
     public String getINNtrimZ() {
         String s = getINN();
+        while (s.endsWith(" ") && s.length() > 10) s = s.substring(0, s.length()-1);
         while (s.startsWith("0") && s.length() > 10) s = s.substring(1);
         if (EMPTY_INN.equals(s)) return Const.EMPTY_STRING;
         return s;

@@ -36,6 +36,7 @@ public class Const {
         public static final int FN_REPLACEMENT = 0xCD;
         public static final int NO_CASH = 0xCE;
         public static final int NOT_IMPLEMENTED = 0xCF;
+        public static final int WRONG_INN = 0xD0;
     }
 
     private Const() {
