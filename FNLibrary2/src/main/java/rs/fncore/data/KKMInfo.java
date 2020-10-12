@@ -57,6 +57,10 @@ public class KKMInfo extends Document {
      * Причина регистрации - Изменение настроек ККТ
      */
     public static final int REASON_CHANGE_KKT_SETTINGS = 4;
+    /**
+     * Изменение ИНН
+     */
+    public static final int REASON_CHANGE_INN = 5;
 
     /**
      * Версия ФФД
