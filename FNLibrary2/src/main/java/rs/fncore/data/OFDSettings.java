@@ -15,7 +15,7 @@ public class OFDSettings implements Parcelable {
     private String _ofdServerAddress = Const.EMPTY_STRING;
     private int _ofdServerPort = 7777;
     private int _ofdServerTimeout = 60;
-    private boolean _sendImmediately;
+    private volatile boolean _sendImmediately;
 
     public OFDSettings() {
     }

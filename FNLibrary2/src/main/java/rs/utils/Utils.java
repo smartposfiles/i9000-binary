@@ -44,6 +44,31 @@ public class Utils {
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     public static final DateFormat DATE_FORMAT_S = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
+    /**
+     * Вычитать Uint32 из ByteBuffer
+     *
+     * @param bb
+     * @return
+     */
+    public static final long readUint32LE(ByteBuffer bb) {
+        return bb.getInt() & 0xFFFFFFFFL;
+    }
+
+    /**
+     * Вычитать Uint16 из ByteBuffer
+     *
+     * @param bb
+     * @return
+     */
+    public static final int readUint16LE(ByteBuffer bb) {
+        return bb.getShort()&0xFFFF;
+    }
+
+    /**
+     * Получить стек ошибки
+     *
+     * @return
+     */
     public static String getStackTrace(){
         String res="";
         StackTraceElement elem[] = Thread.currentThread().getStackTrace();

@@ -19,7 +19,9 @@ public class SellItem extends TLV implements IReableFromParcel {
      */
     public static final int[] TAGS_1224 = {
         FZ54Tag.T1171_SUPPLIER_PHONE,
-        FZ54Tag.T1225_SUPPLIER_NAME
+        FZ54Tag.T1225_SUPPLIER_NAME,
+        FZ54Tag.T1226_SUPPLIER_INN
+
     };
 
     /**
@@ -130,6 +132,10 @@ public class SellItem extends TLV implements IReableFromParcel {
          * Частичный кредит
          */
         PatrialCredit,
+        /**
+         * Передача в кредит
+         */
+        CreditTransfer,
         /**
          * Оплата кредита
          */
