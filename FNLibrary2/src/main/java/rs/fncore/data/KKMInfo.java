@@ -92,7 +92,7 @@ public class KKMInfo extends Document {
      *
      * @author nick
      */
-    public static enum FNConnectionMode {
+    public enum FNConnectionMode {
         usb, uart, virtual, network
     }
 
@@ -679,5 +679,9 @@ public class KKMInfo extends Document {
         } catch (JSONException jse) {
         }
         return result;
+    }
+
+    public void resetState(){
+        _fn_state = 0;
     }
 }
