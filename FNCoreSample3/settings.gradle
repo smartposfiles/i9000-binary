@@ -1,0 +1,6 @@
+rootProject.name='FNCore2Sample'
+include ':fncore2sample'
+
+include ':fnlibrary2'
+
+project(':fnlibrary2').projectDir = new File(settingsDir, '../fncore2/fnlibrary2')
